@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-royal: 'Cinzel', serif;
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FFF8ED;
+    color: #241A18;
+  }
+}
+
+.font-royal {
+  font-family: 'Cinzel', serif;
+}
+
+.font-serif-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Custom scrollbars for category tabs and order lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Print styles for QR cards */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-qr-card, #printable-qr-card * {
+    visibility: visible;
+  }
+  #printable-qr-card {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+  }
+}

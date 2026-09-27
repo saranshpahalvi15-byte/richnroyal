@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Super Admin Bootstrap Email & Admin Document lookup
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'gridandgift@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow get, list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Cafe Settings
+    match /settings/{settingId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Categories
+    match /categories/{categoryId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Products
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Tables
+    match /tables/{tableId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Customer Orders
+    match /orders/{orderId} {
+      // Customers can get their single order by ID for live order confirmation
+      allow get: if true;
+      // Only authenticated admins can list/query all orders
+      allow list: if isAdmin();
+      // Any customer from a table can place an order
+      allow create: if (
+        request.resource.data.keys().hasAll(['tableId', 'tableName', 'items', 'totalAmount', 'status']) &&
+        request.resource.data.tableId is string &&
+        request.resource.data.tableName is string &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.totalAmount is number &&
+        request.resource.data.totalAmount > 0 &&
+        request.resource.data.items is list &&
+        request.resource.data.items.size() > 0 &&
+        request.resource.data.items.size() <= 50
+      );
+      // Only admins can update status or delete orders
+      allow update, delete: if isAdmin();
+    }
+
+    // FCM Push Notification Tokens
+    match /fcm_tokens/{tokenId} {
+      allow get, list: if true;
+      allow create, update, delete: if true;
+    }
+  }
+}

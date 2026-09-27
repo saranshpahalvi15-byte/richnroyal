@@ -1,0 +1,7 @@
+{
+  "name": "Rich 'N' Royal Cafe - QR Ordering & Admin System",
+  "description": "Mobile-first QR table ordering and live kitchen & admin management system for Rich 'N' Royal Cafe in Ambala, Haryana.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

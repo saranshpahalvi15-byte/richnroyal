@@ -1,0 +1,133 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized cafe administrator account",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Email address of the administrator" },
+        "role": { "type": "string", "enum": ["admin", "superadmin"], "description": "Role permission level" },
+        "active": { "type": "boolean", "description": "Whether the admin account is active" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["email", "role", "active"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Menu category (e.g., Pizza, Beverages, Burgers)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Category name", "maxLength": 100 },
+        "active": { "type": "boolean", "description": "Category visibility status" },
+        "sortOrder": { "type": "number", "description": "Display ordering index" },
+        "icon": { "type": "string", "description": "Optional icon or emoji identifier", "maxLength": 50 }
+      },
+      "required": ["name", "active", "sortOrder"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Food and beverage menu item",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Dish or drink name", "maxLength": 150 },
+        "description": { "type": "string", "description": "Dish description and ingredients", "maxLength": 500 },
+        "price": { "type": "number", "description": "Price in INR" },
+        "categoryId": { "type": "string", "description": "Category identifier", "maxLength": 100 },
+        "categoryName": { "type": "string", "description": "Category display name", "maxLength": 100 },
+        "imageBase64": { "type": "string", "description": "Optimized Base64 image payload" },
+        "available": { "type": "boolean", "description": "Stock and serving availability" },
+        "isVeg": { "type": "boolean", "description": "Vegetarian flag" },
+        "badge": { "type": "string", "description": "Special badge (e.g., Chef's Special, Bestseller)", "maxLength": 50 }
+      },
+      "required": ["name", "price", "categoryId", "available"]
+    },
+    "Table": {
+      "title": "Table",
+      "description": "Cafe dining table with QR code identification",
+      "type": "object",
+      "properties": {
+        "tableNumber": { "type": "string", "description": "Table number code (e.g. 01, 02)", "maxLength": 20 },
+        "tableName": { "type": "string", "description": "Table display name (e.g. Table 01)", "maxLength": 50 },
+        "active": { "type": "boolean", "description": "Whether the table is open for orders" },
+        "qrToken": { "type": "string", "description": "Unique QR verification token", "maxLength": 100 },
+        "capacity": { "type": "number", "description": "Seating capacity" },
+        "section": { "type": "string", "description": "Seating section (e.g. Main Hall, Outdoor)", "maxLength": 50 }
+      },
+      "required": ["tableNumber", "tableName", "active"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer food order placed from table QR",
+      "type": "object",
+      "properties": {
+        "tableId": { "type": "string", "description": "Table identifier", "maxLength": 50 },
+        "tableName": { "type": "string", "description": "Table name snapshot", "maxLength": 50 },
+        "items": { "type": "array", "description": "Ordered line items with snapshot pricing" },
+        "totalAmount": { "type": "number", "description": "Total order amount in INR" },
+        "status": { "type": "string", "enum": ["pending", "preparing", "ready", "completed", "cancelled"], "description": "Kitchen workflow status" },
+        "customerNotes": { "type": "string", "description": "Special instructions from customer", "maxLength": 500 },
+        "customerFcmToken": { "type": "string", "description": "Customer FCM push registration token", "maxLength": 300 },
+        "orderNumber": { "type": "string", "description": "Human readable order number", "maxLength": 20 }
+      },
+      "required": ["tableId", "tableName", "items", "totalAmount", "status"]
+    },
+    "FCMToken": {
+      "title": "FCMToken",
+      "description": "FCM Push notification registration token for admins and customers",
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "description": "Device FCM registration token" },
+        "role": { "type": "string", "enum": ["admin", "customer"], "description": "Target audience role" },
+        "tableId": { "type": "string", "description": "Associated table identifier" },
+        "orderId": { "type": "string", "description": "Associated customer order ID" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["token", "role"]
+    },
+    "CafeSettings": {
+      "title": "CafeSettings",
+      "description": "Cafe branding, operational hours, and contact information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Cafe name", "maxLength": 100 },
+        "tagline": { "type": "string", "description": "Cafe tagline", "maxLength": 200 },
+        "address": { "type": "string", "description": "Physical cafe address", "maxLength": 300 },
+        "phone": { "type": "string", "description": "Contact phone number", "maxLength": 50 },
+        "isOpen": { "type": "boolean", "description": "Whether cafe is currently accepting orders" },
+        "currencySymbol": { "type": "string", "description": "Currency symbol (₹)", "maxLength": 10 },
+        "logoBase64": { "type": "string", "description": "Base64 encoded logo" }
+      },
+      "required": ["name", "address", "isOpen"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Authorized administrators collection"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Menu categories collection"
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Menu food & beverage items collection"
+    },
+    "/tables/{tableId}": {
+      "schema": { "$ref": "#/entities/Table" },
+      "description": "Dining tables collection"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer orders collection"
+    },
+    "/fcm_tokens/{tokenId}": {
+      "schema": { "$ref": "#/entities/FCMToken" },
+      "description": "Device push tokens for real-time FCM updates"
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/CafeSettings" },
+      "description": "Global cafe settings document"
+    }
+  }
+}
